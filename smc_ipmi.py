@@ -11,7 +11,7 @@ def get_ipmi_sensor(path, ip, user, password):
     return ipmi_output.stdout
 
 
-def parse_ipmi_sensor(ipmi_sensor_output: str, temp_unit: str):
+def parse_ipmi_sensor(ipmi_sensor_output: str, temp_unit: str, ip: str):
     csv_reader = csv.reader(ipmi_sensor_output.splitlines(), delimiter='|')
     points = []
 
@@ -48,7 +48,7 @@ def parse_ipmi_sensor(ipmi_sensor_output: str, temp_unit: str):
             field += ',value=0'
             field += ',unit=""'
 
-        points.append('smc_ipmi,{} {}'.format(tag, field))
+        points.append('smc_ipmi,{} {},ip={}'.format(tag, field, ip))
     return points
 
 
@@ -57,7 +57,7 @@ def get_pminfo(path, ip, user, password):
     return pminfo_output.stdout
 
 
-def parse_pminfo(pm_output: str, temp_unit: str):
+def parse_pminfo(pm_output: str, temp_unit: str, ip: str):
     csv_reader = csv.reader(pm_output.splitlines(), delimiter='|')
     points = []
 
@@ -80,7 +80,7 @@ def parse_pminfo(pm_output: str, temp_unit: str):
             value = value.split(' ')
             field = 'value={},unit="{}"'.format(value[0], value[1])
 
-        points.append('smc_ipmi,{} {}'.format(tag, field))
+        points.append('smc_ipmi,{} {},ip={}'.format(tag, field, ip))
 
     return points
 
@@ -88,7 +88,7 @@ def get_dcmi(path, ip, user, password):
   dcmi_output = subprocess.run([path, ip, user, password, 'dcmi', 'powerStatus'], capture_output=True, universal_newlines=True)
   return dcmi_output.stdout
 
-def parse_dcmi(dcmi_output: str):
+def parse_dcmi(dcmi_output: str, ip: str):
   csv_reader = csv.reader(dcmi_output.splitlines(), delimiter='|')
   points = []
 
@@ -100,7 +100,7 @@ def parse_dcmi(dcmi_output: str):
     tag = 'sensor=DCMI_' + row[0].strip().replace(' ', '\ ')
     value = row[1].strip()[:-1]
     field = 'value={},unit="W"'.format(value)
-    points.append('smc_ipmi,{} {}'.format(tag, field))
+    points.append('smc_ipmi,{} {},ip={}'.format(tag, field, ip))
   return points
 
 
@@ -118,9 +118,9 @@ if __name__ == '__main__':
     pminfo_out = get_pminfo(args.path, args.ip, args.user, args.password)
     dcmi_out = get_dcmi(args.path, args.ip, args.user, args.password)
 
-    ipmi_points = parse_ipmi_sensor(ipmi_out, args.temp_unit)
-    pmbus_points = parse_pminfo(pminfo_out, args.temp_unit)
-    dcmi_points = parse_dcmi(dcmi_out)
+    ipmi_points = parse_ipmi_sensor(ipmi_out, args.temp_unit, args.ip)
+    pmbus_points = parse_pminfo(pminfo_out, args.temp_unit, args.ip)
+    dcmi_points = parse_dcmi(dcmi_out, args.ip)
 
     points = ipmi_points + pmbus_points + dcmi_points
 
