@@ -30,7 +30,7 @@ def parse_ipmi_sensor(ipmi_sensor_output: str, temp_unit: str, ip: str):
         sensor_id = sensor_match[0][0].strip('()')
         sensor_name = sensor_match[0][1].strip()
 
-        tag = 'sensor=' + sensor_name.replace(' ', '\ ')
+        tag = 'sensor=' + sensor_name.replace(' ', '\ ') + ",ip=" + ip
 
         # reading
         reading = row[2].strip()
@@ -48,7 +48,7 @@ def parse_ipmi_sensor(ipmi_sensor_output: str, temp_unit: str, ip: str):
             field += ',value=0'
             field += ',unit=""'
 
-        points.append('smc_ipmi,{} {},ip={}'.format(tag, field, ip))
+        points.append('smc_ipmi,{} {}'.format(tag, field))
     return points
 
 
@@ -67,7 +67,7 @@ def parse_pminfo(pm_output: str, temp_unit: str, ip: str):
                 row[0].strip().lower().startswith('pmbus') or row[0].strip().lower().startswith('pws'):
             continue
 
-        tag = 'sensor=PMBus_' + row[0].strip().replace(' ', '\ ')
+        tag = 'sensor=PMBus_' + row[0].strip().replace(' ', '\ ') + ",ip=" + ip
         value = row[1].strip()
         if row[0].strip().lower() == 'status':
             status = '1' if row[1].strip().find('STATUS OK') > 0 else '0'
@@ -80,7 +80,7 @@ def parse_pminfo(pm_output: str, temp_unit: str, ip: str):
             value = value.split(' ')
             field = 'value={},unit="{}"'.format(value[0], value[1])
 
-        points.append('smc_ipmi,{} {},ip={}'.format(tag, field, ip))
+        points.append('smc_ipmi,{} {}'.format(tag, field))
 
     return points
 
@@ -97,10 +97,10 @@ def parse_dcmi(dcmi_output: str, ip: str):
     if len(row) < 2 or row[0].strip().lower() == 'ipmi timestamp' or \
             row[0].strip().lower() == 'sampling period' or row[0].strip().lower() == 'power reading state':
         continue
-    tag = 'sensor=DCMI_' + row[0].strip().replace(' ', '\ ')
+    tag = 'sensor=DCMI_' + row[0].strip().replace(' ', '\ ') + ",ip=" + ip
     value = row[1].strip()[:-1]
     field = 'value={},unit="W"'.format(value)
-    points.append('smc_ipmi,{} {},ip={}'.format(tag, field, ip))
+    points.append('smc_ipmi,{} {}'.format(tag, field))
   return points
 
 
