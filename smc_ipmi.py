@@ -60,14 +60,18 @@ def get_pminfo(path, ip, user, password):
 def parse_pminfo(pm_output: str, temp_unit: str, ip: str):
     csv_reader = csv.reader(pm_output.splitlines(), delimiter='|')
     points = []
-
+    module = ""
+    slaveAddress = ""
     for row in csv_reader:
         # skip non-data rows
         if len(row) < 2 or row[0].strip().lower() == 'item' or row[0].strip().startswith('-') or \
                 row[0].strip().lower().startswith('pmbus') or row[0].strip().lower().startswith('pws'):
+            if "SlaveAddress" in str(row) and "Module" in str(row):
+              slaveAddress = str(row).strip().split("] [")[0].split("[")[2].split("=")[1].strip()
+              module = str(row).strip().split("] [")[1].split("]")[0].split(" ")[1]
             continue
 
-        tag = 'sensor=PMBus_' + row[0].strip().replace(' ', '\ ') + ",ip=" + ip
+        tag = 'sensor=PMBus_' + row[0].strip().replace(' ', '\ ') + ",ip=" + ip + ",module=" + module + ",slaveAddress=" + slaveAddress
         value = row[1].strip()
         if row[0].strip().lower() == 'status':
             status = '1' if row[1].strip().find('STATUS OK') > 0 else '0'
