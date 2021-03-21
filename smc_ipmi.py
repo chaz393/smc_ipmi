@@ -84,6 +84,25 @@ def parse_pminfo(pm_output: str, temp_unit: str):
 
     return points
 
+def get_dcmi(path, ip, user, password):
+  dcmi_output = subprocess.run([path, ip, user, password, 'dcmi', 'powerStatus'], capture_output=True, universal_newlines=True)
+  return dcmi_output.stdout
+
+def parse_dcmi(dcmi_output: str):
+  csv_reader = csv.reader(dcmi_output.splitlines(), delimiter='|')
+  points = []
+
+  for row in csv_reader:
+    # skip non-data rows
+    if len(row) < 2 or row[0].strip().lower() == 'ipmi timestamp' or \
+            row[0].strip().lower() == 'sampling period' or row[0].strip().lower() == 'power reading state':
+        continue
+    tag = 'sensor=DCMI_' + row[0].strip().replace(' ', '\ ')
+    value = row[1].strip()[:-1]
+    field = 'value={},unit="W"'.format(value)
+    points.append('smc_ipmi,{} {}'.format(tag, field))
+  return points
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SMCIpmi input plugin')
@@ -97,10 +116,12 @@ if __name__ == '__main__':
 
     ipmi_out = get_ipmi_sensor(args.path, args.ip, args.user, args.password)
     pminfo_out = get_pminfo(args.path, args.ip, args.user, args.password)
+    dcmi_out = get_dcmi(args.path, args.ip, args.user, args.password)
 
     ipmi_points = parse_ipmi_sensor(ipmi_out, args.temp_unit)
     pmbus_points = parse_pminfo(pminfo_out, args.temp_unit)
+    dcmi_points = parse_dcmi(dcmi_out)
 
-    points = ipmi_points + pmbus_points
+    points = ipmi_points + pmbus_points + dcmi_points
 
     print(*points, sep='\n')
