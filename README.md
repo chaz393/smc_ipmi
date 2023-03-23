@@ -8,9 +8,13 @@ I allowed for chassis with redundant PSUs to tag each one. This was so I could r
 I added the ability to pass in multiple IPs of hosts. Small change but made my life a bit easier when implementing this in Telegraf
 
 smc_ipmi.py
+
 This is for anything prior to BMC firmware version 1.01
+
 smc_ipmi_new.py
+
 This is for BMC firmware versions newer than 1.01
+
 
 
 # smc_ipmi Telegraf input plugin
