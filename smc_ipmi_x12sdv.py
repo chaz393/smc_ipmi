@@ -67,11 +67,14 @@ def parse_pminfo(pm_output: str, temp_unit: str, ip: str):
         if len(row) == 0 or row[0].strip().lower() == 'item' or row[0].strip().startswith('-') or \
                 row[0].strip().lower().startswith('pmbus') or row[0].strip().lower().startswith('pws'):
             continue
+        moduleRow = False
         if "Module" in str(row):
             module = str(row).strip().split("[")[2].split("]")[0]
+            moduleRow = True
         if "SlaveAddress" in str(row):
             slaveAddr = str(row).strip().split("[")[1].split("]")[0]
-        if len(module) > 0 or len(slaveAddr) > 0:
+            moduleRow = True
+        if moduleRow:
             continue
         tag = 'sensor=PMBus_' + row[0].strip().replace(' ', '\ ') + ",ip=" + ip + ",module=" + module + ",slaveAddress=" + slaveAddr
         value = row[1].strip()
