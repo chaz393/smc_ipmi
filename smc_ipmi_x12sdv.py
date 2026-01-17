@@ -69,7 +69,7 @@ def parse_pminfo(pm_output: str, temp_unit: str, ip: str):
             continue
         moduleRow = False
         if "Module" in str(row):
-            module = str(row).strip().split("[")[3].split("]")[0]
+            module = str(row).strip().split("[")[3].split("]")[0].split(" ")[1]
             moduleRow = True
         if "SlaveAddress" in str(row):
             slaveAddr = str(row).strip().split("[")[2].split("]")[0].split("=")[1].strip()
